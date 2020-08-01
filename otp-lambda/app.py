@@ -8,10 +8,7 @@ def generate_character_set():
 
 def generate_otp(length=32):
     characters = generate_character_set()
-
-    otp = ''.join(random.choices(characters, k=length))
-
-    return otp
+    return''.join(random.choices(characters, k=length))
 
 def handler(event, context):
     return {
