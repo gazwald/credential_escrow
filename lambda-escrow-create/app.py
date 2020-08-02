@@ -71,7 +71,7 @@ def status(code, body):
         'headers': {
             'Content-Type': 'application/json'
         },
-        'body': body
+        'body': json.dumps(body)
     }
 
 def handler(event, context):
@@ -98,7 +98,7 @@ def handler(event, context):
                                   parameter_desc)
         parameters.append(parameter_name)
 
-    return status(200, json.dumps({'uuid': parameter_uuid, 'otp': otp_parameter_value, 'parameters': parameters}))
+    return status(200, {'uuid': parameter_uuid, 'otp': otp_parameter_value, 'parameters': parameters})
 
 
 
