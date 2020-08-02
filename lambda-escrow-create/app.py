@@ -44,9 +44,7 @@ def create_parameter(client,
                      parameter_tier: str = 'Standard',
                      parameter_tags: list = [],
                      parameter_overwrite: bool = True):
-    print(parameter_name)
-    print(parameter_value)
-    print(parameter_desc)
+
     response = client.put_parameter(
         Name=parameter_name,
         Description=parameter_desc,
@@ -88,6 +86,7 @@ def handler(event, context):
     otp_parameter_name = generate_parameter_name(prefix, group_name, parameter_uuid, 'otp')
     otp_parameter_value = create_otp_parameter(client, otp_parameter_name)
 
+    parameters = []
     credentials = event.get('credentials', None)
     for parameter in credentials:
         parameter_name = generate_parameter_name(prefix, group_name, parameter_uuid, parameter.get('Key', None))
@@ -97,8 +96,9 @@ def handler(event, context):
                                   parameter_name,
                                   parameter_value,
                                   parameter_desc)
+        parameters.append(parameter_name)
 
-    return status(200, json.dumps({'uuid': parameter_uuid, 'otp': otp_parameter_value}))
+    return status(200, json.dumps({'uuid': parameter_uuid, 'otp': otp_parameter_value, 'parameters': parameters}))
 
 
 
