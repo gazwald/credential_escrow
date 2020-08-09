@@ -16,3 +16,5 @@ Work flow:
   * Deletes credentials and OTP from SSM
   * Returns credentials to application
 * Application does what it needs to do with credentials
+
+This still requires the application to dispose of the credentials that are proved.
