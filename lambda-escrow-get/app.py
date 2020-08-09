@@ -18,33 +18,55 @@ def create_client(region: str = 'ap-southeast-2'):
     )
     return boto3.client('ssm', config=config)
 
-def delete_parameters(parameters: list):
-    response = client.delete_parameters(
-        Names=parameters
-    )
+def delete_parameters(client,
+                      parameters: list):
+    try:
+        response = client.delete_parameters(
+            Names=parameters
+        )
+    except:
+        return False
+    else:
+        return True
 
 
-def get_parameters(parameters: list):
+def filter_parameters(parameters: dict):
+    keys = ['Name', 'Value']
+    result = list()
+    for parameter in parameters:
+        result.append({k: v for k, v in parameter.items() if k in keys})
+    return result
+
+
+def get_parameters(client,
+                   parameters: list):
     response = client.get_parameters(
         Names=parameters
     )
-    if response:
-        response = delete_parameters(parameters)
-        if response:
-            return response.get('Parameters')
+    if response and delete_parameters(client, parameters):
+        return filter_parameters(response.get('Parameters', dict()))
 
 
-def verify_otp(parameter_key: str,
-               parameter_value: str)
+def verify_otp(client,
+               parameter_key: str,
+               parameter_value: str):
 
-    response = client.get_parameter(
-        Name=parameter_key
-    ).get('Parameter', dict())
+    if parameter_key and parameter_value:
+        try:
+            response = client.get_parameter(
+                Name=parameter_key
+            ).get('Parameter', dict())
+        except client.exceptions.ParameterNotFound as e:
+            return False
+        except client.exceptions.ParameterVersionNotFound as e:
+            return False
+        except client.exceptions.InvalidKeyId as e:
+            return False
+        else:
+            value = response.get('Value', None)
+            if value != None and value == parameter_value:
+                return delete_parameters(client, [parameter_key])
 
-    value = response.get('Value', None)
-
-    if value != None and value == parameter_value
-        return True
 
 def status(code, body):
     return {
@@ -59,27 +81,32 @@ def handler(event, context):
     client = create_client(event.get('region', 'ap-southeast-2'))
     otp = event.get('otp')
     if otp:
-        result = verify_otp(otp.get('Key', ''),
-                            otp.get('Value', ''))
+        result = verify_otp(client,
+                            otp.get('Key', None),
+                            otp.get('Value', None))
         if result:
-            parameters = event.get('parameters', list())
+            parameters = event.get('parameters', None)
             if parameters:
-                result = get_parameters(parameters)
-                return status(200, result)
+                result = get_parameters(client, parameters)
+                if result:
+                    return status(200, result)
+                else:
+                    return status(200, 'Successfully did nothing; No parameters provided or none found')
             else:
-                return status(400, '')
+                return status(400, 'No parameters provided or none found')
         else:
-            return status(400, '')
+            return status(400, 'Unable to verify OTP')
     else:
-        return status(400, '')
+        return status(400, 'No OTP provided')
             
     
 
 
 if __name__ == '__main__':
-    data = {'region': '',
-            'otp': {'Key': '/steam/8b3698bf-0f68-465d-886e-abd78575aa70/otp', 
-                    'Value': '...' },
-            'parameters': [ '/steam/8b3698bf-0f68-465d-886e-abd78575aa70/username',
-                            '/steam/8b3698bf-0f68-465d-886e-abd78575aa70/password' ]
+    data = {'region': 'us-west-2',
+            'otp': {'Key': '/steam/fa7b38a9-fbb8-4f07-afc9-5e8527974695/otp', 
+                    'Value': 'hEVzvasSixBAcjfG34jiLPE5HvkbdcbK'},
+            'parameters': [ '/steam/fa7b38a9-fbb8-4f07-afc9-5e8527974695/username',
+                            '/steam/fa7b38a9-fbb8-4f07-afc9-5e8527974695/password' ]
+    }
     print(handler(data, None))
