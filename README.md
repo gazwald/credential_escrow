@@ -7,8 +7,8 @@ Intended use case for this was for systems that would eventually become untruste
 Work flow:
 
 * As part of the build process:
- *  Set the credentials in SSM with OTP
- *  Bakes the OTP into the application
+  * Set the credentials in SSM with OTP
+  * Bakes the OTP into the application
 * Application requests credentials from Credential Escrow using OTP
 * Credential Escrow:
   * Verifies OTP
