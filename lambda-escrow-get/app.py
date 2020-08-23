@@ -78,14 +78,15 @@ def status(code, body):
     }
 
 def handler(event, context):
-    client = create_client(event.get('region', 'ap-southeast-2'))
-    otp = event.get('otp')
+    data = json.loads(event.get('body'))
+    client = create_client(data.get('region', 'ap-southeast-2'))
+    otp = data.get('otp')
     if otp:
         result = verify_otp(client,
                             otp.get('Key', None),
                             otp.get('Value', None))
         if result:
-            parameters = event.get('parameters', None)
+            parameters = data.get('parameters', None)
             if parameters:
                 result = get_parameters(client, parameters)
                 if result:

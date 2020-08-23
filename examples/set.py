@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import requests
 
+
 def main():
     url = 'https://mr3gvzju4l.execute-api.ap-southeast-2.amazonaws.com/prod/escrow'
     values = {
@@ -12,7 +13,7 @@ def main():
         ]
     }
 
-    r = requests.post(
+    r = requests.put(
         url,
         json=values
     )

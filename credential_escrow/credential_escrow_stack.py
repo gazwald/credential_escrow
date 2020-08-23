@@ -59,14 +59,22 @@ class CredentialEscrowStack(core.Stack):
         return apigateway.LambdaIntegration(self.lambda_escrow_get)
 
     def add_escrow_set_lambda_to_api(self):
-        self.api_escrow.add_method("POST", self.lambda_escrow_set_integration)
+        self.api_escrow.add_method("PUT", self.lambda_escrow_set_integration)
 
     def add_escrow_get_lambda_to_api(self):
-        self.api_escrow.add_method("GET", self.lambda_escrow_get_integration)
+        self.api_escrow.add_method("POST", self.lambda_escrow_get_integration)
 
     def create_set_policy(self):
         policy = iam.PolicyStatement(
             resources=["*"],
             actions=["ssm:PutParameter"]
+        )
+        return policy
+
+    def create_get_policy(self):
+        policy = iam.PolicyStatement(
+            resources=["*"],
+            actions=["ssm:GetParameter",
+                     "ssm:DeleteParameter"]
         )
         return policy
