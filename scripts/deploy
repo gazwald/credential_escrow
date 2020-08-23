@@ -2,4 +2,4 @@
 
 cd "$(dirname $0)/.."
 
-./cdk-docker/cdk deploy credential-escrow
+./cdk-docker/cdk deploy --require-approval never credential-escrow
