@@ -4,6 +4,7 @@ from aws_cdk import core
 
 import aws_cdk.aws_apigateway as apigateway
 import aws_cdk.aws_lambda as aws_lambda
+import aws_cdk.aws_iam as iam
 
 
 class CredentialEscrowStack(core.Stack):
@@ -32,11 +33,17 @@ class CredentialEscrowStack(core.Stack):
         return self.api.root.add_resource("escrow")
 
     def create_escrow_set_lambda(self):
-        return aws_lambda.Function(self, "lambda-escrow-set",
+        lambda_function = aws_lambda.Function(self, "lambda-escrow-set",
             code=aws_lambda.Code.from_asset(os.path.join(os.getcwd(), "lambda-escrow-set")),
             handler="app.handler",
             runtime=aws_lambda.Runtime.PYTHON_3_6
-        )        
+        )
+
+        policy = self.create_set_policy()
+        lambda_function.add_to_role_policy(policy)
+
+        return lambda_function
+
 
     def create_escrow_get_lambda(self):
         return aws_lambda.Function(self, "lambda-escrow-get",
@@ -56,4 +63,10 @@ class CredentialEscrowStack(core.Stack):
 
     def add_escrow_get_lambda_to_api(self):
         self.api_escrow.add_method("GET", self.lambda_escrow_get_integration)
-        
+
+    def create_set_policy(self):
+        policy = iam.PolicyStatement(
+            resources=["*"],
+            actions=["ssm:PutParameter"]
+        )
+        return policy
