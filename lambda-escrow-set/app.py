@@ -75,9 +75,10 @@ def status(code, body):
     }
 
 def handler(event, context):
-    client = create_client(event.get('region', 'ap-southeast-2'))
-    prefix = event.get('prefix', '')
-    group_name = event.get('group_name', None)
+    data = json.loads(event.get('body', None))
+    client = create_client(data.get('region', 'ap-southeast-2'))
+    prefix = data.get('prefix', '')
+    group_name = data.get('group_name', None)
     if not group_name:
         return status(400, '')
 
@@ -87,7 +88,7 @@ def handler(event, context):
     otp_parameter_value = create_otp_parameter(client, otp_parameter_name)
 
     parameters = []
-    credentials = event.get('credentials', None)
+    credentials = data.get('credentials', None)
     for parameter in credentials:
         parameter_name = generate_parameter_name(prefix, group_name, parameter_uuid, parameter.get('Key', None))
         parameter_value = parameter.get('Value')
