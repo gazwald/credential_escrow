@@ -18,6 +18,17 @@ def create_client(region: str = 'ap-southeast-2'):
     )
     return boto3.client('ssm', config=config)
 
+def delete_parameter(client,
+                      parameter: str):
+    try:
+        response = client.delete_parameter(
+            Name=parameter
+        )
+    except:
+        return False
+    else:
+        return True
+
 def delete_parameters(client,
                       parameters: list):
     try:
@@ -65,7 +76,7 @@ def verify_otp(client,
         else:
             value = response.get('Value', None)
             if value != None and value == parameter_value:
-                return delete_parameters(client, [parameter_key])
+                return delete_parameter(client, parameter_key)
 
 
 def status(code, body):

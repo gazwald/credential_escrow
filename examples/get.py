@@ -3,21 +3,26 @@ import requests
 
 
 def main():
-    url = 'https://mr3gvzju4l.execute-api.ap-southeast-2.amazonaws.com/prod/escrow'
+    otp = 'NpwynLtGGjzsQCDtxVRESMWJmcyKdhNp'
+    uuid = 'd490d32a-6af6-44f8-af14-e91846850dc4'
+
+    base_url = 'https://f3qo7g8tf8.execute-api.ap-southeast-2.amazonaws.com/prod/'
+    url = '/'.join([base_url, 'escrow', 'get'])
+
     values = {
         'region': 'ap-southeast-2',
-        'otp': {'Key': 'm8P2geCCb3leq5essg6PCUp3Z7etovsN',
-                'Value': '/steam/ed496ac3-974d-4de3-b43a-6d0b7d2838f0/otp',
+        'otp': {'Key': f'/steam/{uuid}/otp',
+                'Value': otp,
         },
         'parameters': [
-            '/steam/ed496ac3-974d-4de3-b43a-6d0b7d2838f0/username',
-            '/steam/ed496ac3-974d-4de3-b43a-6d0b7d2838f0/password'
+            f'/steam/{uuid}/username',
+            f'/steam/{uuid}/password'
         ]
     }
 
     r = requests.post(
         url,
-        params=values
+        json=values
     )
 
     print(r.status_code)

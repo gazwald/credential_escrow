@@ -14,7 +14,9 @@ class CredentialEscrowStack(core.Stack):
 
         # Define API and it's resources
         self.api = self.create_api()
-        self.api_escrow = self.create_escrow_resource()
+        self.api_escrow = self.api.root.add_resource("escrow")
+        self.api_escrow_set = self.api_escrow.add_resource("set")
+        self.api_escrow_get = self.api_escrow.add_resource("get")
 
         # Define Lambdas and their integrations
         self.lambda_escrow_set = self.create_escrow_set_lambda()
@@ -32,6 +34,7 @@ class CredentialEscrowStack(core.Stack):
     def create_escrow_resource(self):
         return self.api.root.add_resource("escrow")
 
+
     def create_escrow_set_lambda(self):
         lambda_function = aws_lambda.Function(self, "lambda-escrow-set",
             code=aws_lambda.Code.from_asset(os.path.join(os.getcwd(), "lambda-escrow-set")),
@@ -46,11 +49,16 @@ class CredentialEscrowStack(core.Stack):
 
 
     def create_escrow_get_lambda(self):
-        return aws_lambda.Function(self, "lambda-escrow-get",
+        lambda_function = aws_lambda.Function(self, "lambda-escrow-get",
             code=aws_lambda.Code.from_asset(os.path.join(os.getcwd(), "lambda-escrow-get")),
             handler="app.handler",
             runtime=aws_lambda.Runtime.PYTHON_3_6
         )        
+
+        policy = self.create_get_policy()
+        lambda_function.add_to_role_policy(policy)
+
+        return lambda_function
 
     def create_escrow_set_integration(self):
         return apigateway.LambdaIntegration(self.lambda_escrow_set)
@@ -59,22 +67,22 @@ class CredentialEscrowStack(core.Stack):
         return apigateway.LambdaIntegration(self.lambda_escrow_get)
 
     def add_escrow_set_lambda_to_api(self):
-        self.api_escrow.add_method("PUT", self.lambda_escrow_set_integration)
+        self.api_escrow_set.add_method("POST", self.lambda_escrow_set_integration)
 
     def add_escrow_get_lambda_to_api(self):
-        self.api_escrow.add_method("POST", self.lambda_escrow_get_integration)
+        self.api_escrow_get.add_method("POST", self.lambda_escrow_get_integration)
 
     def create_set_policy(self):
-        policy = iam.PolicyStatement(
+        return iam.PolicyStatement(
             resources=["*"],
             actions=["ssm:PutParameter"]
         )
-        return policy
 
     def create_get_policy(self):
-        policy = iam.PolicyStatement(
+        return iam.PolicyStatement(
             resources=["*"],
             actions=["ssm:GetParameter",
-                     "ssm:DeleteParameter"]
+                     "ssm:GetParameters",
+                     "ssm:DeleteParameter",
+                     "ssm:DeleteParameters"]
         )
-        return policy

@@ -3,7 +3,8 @@ import requests
 
 
 def main():
-    url = 'https://mr3gvzju4l.execute-api.ap-southeast-2.amazonaws.com/prod/escrow'
+    base_url = 'https://f3qo7g8tf8.execute-api.ap-southeast-2.amazonaws.com/prod/'
+    url = '/'.join([base_url, 'escrow', 'set'])
     values = {
         'group_name': 'steam',
         'region': 'ap-southeast-2',
@@ -13,7 +14,7 @@ def main():
         ]
     }
 
-    r = requests.put(
+    r = requests.post(
         url,
         json=values
     )
